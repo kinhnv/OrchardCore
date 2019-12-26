@@ -1,0 +1,9 @@
+{
+  "Default": {
+    "State": "Running"
+  },
+  "FastKey": {
+    "RequestUrlPrefix": "fast-key",
+    "State": "Running"
+  }
+}
