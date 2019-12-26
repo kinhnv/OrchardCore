@@ -5,5 +5,9 @@
   "FastKey": {
     "RequestUrlPrefix": "fast-key",
     "State": "Running"
+  },
+  "Blog": {
+    "RequestUrlPrefix": "blog",
+    "State": "Disabled"
   }
 }

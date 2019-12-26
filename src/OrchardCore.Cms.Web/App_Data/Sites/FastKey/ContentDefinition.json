@@ -76,6 +76,157 @@
           }
         }
       ]
+    },
+    {
+      "Name": "Home",
+      "DisplayName": "Home",
+      "Settings": {
+        "ContentTypeSettings": {
+          "Creatable": true,
+          "Listable": true,
+          "Draftable": true,
+          "Versionable": true,
+          "Securable": true
+        },
+        "FullTextAspectSettings": {}
+      },
+      "ContentTypePartDefinitionRecords": [
+        {
+          "PartName": "Home",
+          "Name": "Home",
+          "Settings": {
+            "ContentTypePartSettings": {
+              "Position": "1"
+            }
+          }
+        },
+        {
+          "PartName": "AutoroutePart",
+          "Name": "AutoroutePart",
+          "Settings": {
+            "ContentTypePartSettings": {
+              "Position": "2"
+            },
+            "AutoroutePartSettings": {
+              "ShowHomepageOption": true
+            },
+            "ContentIndexSettings": {}
+          }
+        },
+        {
+          "PartName": "TitlePart",
+          "Name": "TitlePart",
+          "Settings": {
+            "ContentTypePartSettings": {
+              "Position": "0"
+            }
+          }
+        },
+        {
+          "PartName": "BagPart",
+          "Name": "Sections",
+          "Settings": {
+            "ContentTypePartSettings": {
+              "DisplayName": "Sections",
+              "Description": "Provides a collection behavior for your content item.",
+              "Position": "3"
+            },
+            "ContentIndexSettings": {},
+            "BagPartSettings": {
+              "ContainedContentTypes": [
+                "About",
+                "Features"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "Features",
+      "DisplayName": "Features",
+      "Settings": {
+        "ContentTypeSettings": {
+          "Draftable": true,
+          "Versionable": true,
+          "Securable": true
+        },
+        "FullTextAspectSettings": {}
+      },
+      "ContentTypePartDefinitionRecords": [
+        {
+          "PartName": "Features",
+          "Name": "Features",
+          "Settings": {
+            "ContentTypePartSettings": {
+              "Position": "0"
+            }
+          }
+        },
+        {
+          "PartName": "BagPart",
+          "Name": "ListOfFeature",
+          "Settings": {
+            "ContentTypePartSettings": {
+              "DisplayName": "ListOfFeature",
+              "Description": "Provides a collection behavior for your content item.",
+              "Position": "1"
+            },
+            "BagPartSettings": {
+              "ContainedContentTypes": [
+                "Feature"
+              ]
+            },
+            "ContentIndexSettings": {}
+          }
+        }
+      ]
+    },
+    {
+      "Name": "Feature",
+      "DisplayName": "Feature",
+      "Settings": {
+        "ContentTypeSettings": {
+          "Draftable": true,
+          "Versionable": true,
+          "Securable": true
+        },
+        "FullTextAspectSettings": {}
+      },
+      "ContentTypePartDefinitionRecords": [
+        {
+          "PartName": "Feature",
+          "Name": "Feature",
+          "Settings": {
+            "ContentTypePartSettings": {
+              "Position": "0"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "About",
+      "DisplayName": "About",
+      "Settings": {
+        "ContentTypeSettings": {
+          "Draftable": true,
+          "Versionable": true,
+          "Securable": true
+        },
+        "FullTextAspectSettings": {}
+      },
+      "ContentTypePartDefinitionRecords": [
+        {
+          "PartName": "About",
+          "Name": "About",
+          "Settings": {
+            "ContentTypePartSettings": {
+              "Position": "0"
+            }
+          }
+        }
+      ]
     }
   ],
   "ContentPartDefinitionRecords": [
@@ -217,7 +368,77 @@
         }
       },
       "ContentPartFieldDefinitionRecords": []
+    },
+    {
+      "Name": "Slider",
+      "Settings": {
+        "ContentPartSettings": {
+          "Attachable": true
+        }
+      },
+      "ContentPartFieldDefinitionRecords": []
+    },
+    {
+      "Name": "Feature",
+      "Settings": {},
+      "ContentPartFieldDefinitionRecords": [
+        {
+          "FieldName": "MediaField",
+          "Name": "Image",
+          "Settings": {
+            "ContentPartFieldSettings": {
+              "DisplayName": "Image",
+              "Position": "0"
+            }
+          }
+        },
+        {
+          "FieldName": "TextField",
+          "Name": "Title",
+          "Settings": {
+            "ContentPartFieldSettings": {
+              "DisplayName": "Title",
+              "Position": "1"
+            }
+          }
+        },
+        {
+          "FieldName": "TextField",
+          "Name": "SubTitle",
+          "Settings": {
+            "ContentPartFieldSettings": {
+              "DisplayName": "SubTitle",
+              "Position": "2"
+            }
+          }
+        },
+        {
+          "FieldName": "BooleanField",
+          "Name": "ImageIsLeft",
+          "Settings": {
+            "ContentPartFieldSettings": {
+              "DisplayName": "Image Is Left",
+              "Position": "3"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "About",
+      "Settings": {},
+      "ContentPartFieldDefinitionRecords": [
+        {
+          "FieldName": "TextField",
+          "Name": "Title",
+          "Settings": {
+            "ContentPartFieldSettings": {
+              "DisplayName": "Title"
+            }
+          }
+        }
+      ]
     }
   ],
-  "Serial": 81
+  "Serial": 141
 }
