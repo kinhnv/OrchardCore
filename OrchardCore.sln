@@ -366,6 +366,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrchardCore.Benchmarks", "t
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FastKeyTheme", "src\OrchardCore.Themes\FastKeyTheme\FastKeyTheme.csproj", "{2C5781C7-1335-43C6-B22E-978057970534}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CMS_BDS.Media", "src\OrchardCore.Modules\CMS_BDS.Media\CMS_BDS.Media.csproj", "{42D76E87-2984-4717-9B42-CCE7B8FBB203}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -980,6 +982,10 @@ Global
 		{2C5781C7-1335-43C6-B22E-978057970534}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2C5781C7-1335-43C6-B22E-978057970534}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2C5781C7-1335-43C6-B22E-978057970534}.Release|Any CPU.Build.0 = Release|Any CPU
+		{42D76E87-2984-4717-9B42-CCE7B8FBB203}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{42D76E87-2984-4717-9B42-CCE7B8FBB203}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{42D76E87-2984-4717-9B42-CCE7B8FBB203}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{42D76E87-2984-4717-9B42-CCE7B8FBB203}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1152,6 +1158,7 @@ Global
 		{8BC282D3-B7AF-495A-A5B1-D175875EB90E} = {F23AC6C2-DE44-4699-999D-3C478EF3D691}
 		{85610AB6-07E8-45E3-9C48-34D952CC5DD2} = {B8D16C60-99B4-43D5-A3AD-4CD89AF39B25}
 		{2C5781C7-1335-43C6-B22E-978057970534} = {AF3BADEA-CC93-4116-B3C1-F8D074EBEE4F}
+		{42D76E87-2984-4717-9B42-CCE7B8FBB203} = {90030E85-0C4F-456F-B879-443E8A3F220D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {46A1D25A-78D1-4476-9CBF-25B75E296341}

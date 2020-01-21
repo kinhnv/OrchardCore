@@ -2,12 +2,8 @@
   "Default": {
     "State": "Running"
   },
-  "FastKey": {
-    "RequestUrlPrefix": "fast-key",
+  "Agency": {
+    "RequestUrlPrefix": "agency",
     "State": "Running"
-  },
-  "Blog": {
-    "RequestUrlPrefix": "blog",
-    "State": "Disabled"
   }
 }
