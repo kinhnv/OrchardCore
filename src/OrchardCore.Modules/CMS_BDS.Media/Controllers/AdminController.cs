@@ -2,9 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Castle.Core.Logging;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -12,7 +10,6 @@ using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using OrchardCore.Admin;
 using OrchardCore.FileStorage;
 using OrchardCore.Media;
 using OrchardCore.Media.Services;
@@ -25,7 +22,7 @@ namespace CMS_BDS.Media.Controllers
         private readonly IMediaFileStore _mediaFileStore;
         private readonly IAuthorizationService _authorizationService;
         private readonly IContentTypeProvider _contentTypeProvider;
-        private readonly Microsoft.Extensions.Logging.ILogger _logger;
+        private readonly ILogger _logger;
         private readonly IStringLocalizer<AdminController> T;
 
         public AdminController(
@@ -45,6 +42,35 @@ namespace CMS_BDS.Media.Controllers
             T = stringLocalizer;
         }
 
+        private bool? _hasManageOwnMediaPermission = null;
+
+        public bool HasManageOwnMediaPermission
+        {
+            get
+            {
+                if (_hasManageOwnMediaPermission == null)
+                {
+                    _hasManageOwnMediaPermission = User.Claims.Any(x => x.Value == Permissions.ManageOwnMedia.Name);
+                }
+
+                return (bool)_hasManageOwnMediaPermission;
+            }
+        }
+
+        private bool? _hasManageMediaPermission = null;
+
+        public bool HasManageMediaPermission
+        {
+            get
+            {
+                if(_hasManageMediaPermission == null)
+                {
+                    _hasManageMediaPermission = User.Claims.Any(x => x.Value == Permissions.ManageMedia.Name);
+                }
+                return (bool)_hasManageMediaPermission;
+            }
+        }
+
         public async Task<IActionResult> Index()
         {
             if (!await _authorizationService.AuthorizeAsync(User, Permissions.ManageOwnMedia))
@@ -61,6 +87,12 @@ namespace CMS_BDS.Media.Controllers
             {
                 return Unauthorized();
             }
+            else
+            {
+                var hasUserName = (await _mediaFileStore.GetDirectoryContentAsync(string.Empty)).Any(x => x.IsDirectory && x.Name == User.Identity.Name);
+                if (!hasUserName)
+                    await _mediaFileStore.TryCreateDirectoryAsync(User.Identity.Name);
+            }
 
             if (string.IsNullOrEmpty(path))
             {
@@ -73,6 +105,10 @@ namespace CMS_BDS.Media.Controllers
             }
 
             var content = (await _mediaFileStore.GetDirectoryContentAsync(path)).Where(x => x.IsDirectory);
+            if (!HasManageMediaPermission && HasManageOwnMediaPermission)
+            {
+                content = content.Where(x => x.Path.StartsWith(User.Identity.Name));
+            }
 
             var allowed = new List<IFileStoreEntry>();
 
@@ -107,6 +143,11 @@ namespace CMS_BDS.Media.Controllers
 
             var files = (await _mediaFileStore.GetDirectoryContentAsync(path)).Where(x => !x.IsDirectory);
 
+            if (!HasManageMediaPermission && HasManageOwnMediaPermission)
+            {
+                files = files.Where(x => x.Path.StartsWith(User.Identity.Name));
+            }
+
             var allowed = new List<IFileStoreEntry>();
             foreach (var entry in files)
             {
@@ -132,6 +173,11 @@ namespace CMS_BDS.Media.Controllers
             }
 
             var f = await _mediaFileStore.GetFileInfoAsync(path);
+
+            if (!HasManageMediaPermission && HasManageOwnMediaPermission && !f.Path.StartsWith(User.Identity.Name))
+            {
+                return Unauthorized();
+            }
 
             if (f == null)
             {

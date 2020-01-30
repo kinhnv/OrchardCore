@@ -1,31 +1,54 @@
 using System;
 using System.IO;
-using CMS_BDS.Media.Controllers;
-using CMS_BDS.Media.Services;
-using CMS_BDS.Media.ViewModels;
 using Fluid;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 using OrchardCore.Admin;
 using OrchardCore.ContentManagement;
+using OrchardCore.ContentManagement.Display.ContentDisplay;
+using OrchardCore.ContentManagement.Handlers;
+using OrchardCore.ContentTypes.Editors;
+using OrchardCore.Data.Migration;
+using OrchardCore.Deployment;
+using OrchardCore.DisplayManagement.Handlers;
 using OrchardCore.Environment.Shell;
 using OrchardCore.FileStorage;
 using OrchardCore.FileStorage.FileSystem;
 using OrchardCore.Liquid;
-using OrchardCore.Media;
+using CMS_BDS.Media.Controllers;
 using OrchardCore.Media.Core;
+using CMS_BDS.Media.Deployment;
+using CMS_BDS.Media.Drivers;
+using CMS_BDS.Media.Fields;
+using CMS_BDS.Media.Filters;
+using CMS_BDS.Media.Handlers;
 using OrchardCore.Media.Models;
+using CMS_BDS.Media.Processing;
+using CMS_BDS.Media.Recipes;
+using CMS_BDS.Media.Services;
+using CMS_BDS.Media.Settings;
+using CMS_BDS.Media.TagHelpers;
+using CMS_BDS.Media.ViewModels;
 using OrchardCore.Modules;
 using OrchardCore.Modules.FileProviders;
 using OrchardCore.Mvc.Core.Utilities;
 using OrchardCore.Navigation;
+using OrchardCore.Recipes;
 using OrchardCore.Security.Permissions;
+using SixLabors.ImageSharp.Web.Caching;
+using SixLabors.ImageSharp.Web.Commands;
 using SixLabors.ImageSharp.Web.DependencyInjection;
+using SixLabors.ImageSharp.Web.Middleware;
+using SixLabors.ImageSharp.Web.Processors;
+using SixLabors.Memory;
+using OrchardCore.Media;
 
 namespace CMS_BDS.Media
 {
@@ -37,6 +60,7 @@ namespace CMS_BDS.Media
         {
             _adminOptions = adminOptions.Value;
         }
+
         static Startup()
         {
             TemplateContext.GlobalMemberAccessStrategy.Register<DisplayMediaFieldViewModel>();
@@ -90,16 +114,49 @@ namespace CMS_BDS.Media
             services.AddScoped<IPermissionProvider, Permissions>();
             services.AddScoped<IAuthorizationHandler, AttachedMediaFieldsFolderAuthorizationHandler>();
             services.AddScoped<INavigationProvider, AdminMenu>();
-
+            services.AddContentPart<ImageMediaPart>();
             services.AddMedia();
 
+            services.AddLiquidFilter<MediaUrlFilter>("asset_url");
+            services.AddLiquidFilter<ResizeUrlFilter>("resize_url");
+            services.AddLiquidFilter<ImageTagFilter>("img_tag");
+
+            // ImageSharp
+
+            // Add ImageSharp Configuration first, to override ImageSharp defaults.
+            services.AddTransient<IConfigureOptions<ImageSharpMiddlewareOptions>, MediaImageSharpConfiguration>();
+
+            services.AddImageSharpCore()
+                .SetRequestParser<QueryCollectionRequestParser>()
+                .SetMemoryAllocator<ArrayPoolMemoryAllocator>()
+                .SetCache<PhysicalFileSystemCache>()
+                .SetCacheHash<CacheHash>()
+                .AddProvider<MediaResizingFileProvider>()
+                .AddProcessor<ResizeWebProcessor>()
+                .AddProcessor<FormatWebProcessor>()
+                .AddProcessor<ImageVersionProcessor>()
+                .AddProcessor<BackgroundColorWebProcessor>();
+
             // Media Field
+            services.AddContentField<MediaField>();
+            services.AddScoped<IContentFieldDisplayDriver, MediaFieldDisplayDriver>();
+            services.AddScoped<IContentPartFieldDefinitionDisplayDriver, MediaFieldSettingsDriver>();
             services.AddScoped<AttachedMediaFieldFileService, AttachedMediaFieldFileService>();
+            services.AddScoped<IContentHandler, AttachedMediaFieldContentHandler>();
+            services.AddScoped<IModularTenantEvents, TempDirCleanerService>();
+            services.AddScoped<IDataMigration, Migrations>();
+
+            services.AddRecipeExecutionStep<MediaStep>();
+
+            // MIME types
+            services.TryAddSingleton<IContentTypeProvider, FileExtensionContentTypeProvider>();
+
+            services.AddTagHelpers<ImageTagHelper>();
+            services.AddTagHelpers<ImageResizeTagHelper>();
         }
 
         public override void Configure(IApplicationBuilder app, IEndpointRouteBuilder routes, IServiceProvider serviceProvider)
         {
-
             var mediaFileProvider = serviceProvider.GetRequiredService<IMediaFileProvider>();
             var mediaOptions = serviceProvider.GetRequiredService<IOptions<MediaOptions>>().Value;
             var mediaFileStoreCache = serviceProvider.GetService<IMediaFileStoreCache>();
@@ -131,14 +188,42 @@ namespace CMS_BDS.Media
             routes.MapAreaControllerRoute(
                 name: "Media.Index",
                 areaName: "CMS_BDS.Media",
-                pattern: _adminOptions.AdminUrlPrefix + "/BDSMedia",
+                pattern: _adminOptions.AdminUrlPrefix + "/Media",
                 defaults: new { controller = typeof(AdminController).ControllerName(), action = nameof(AdminController.Index) }
+            );
+
+            routes.MapAreaControllerRoute(
+                name: "MediaCache.Index",
+                areaName: "CMS_BDS.Media",
+                pattern: _adminOptions.AdminUrlPrefix + "/MediaCache",
+                defaults: new { controller = typeof(MediaCacheController).ControllerName(), action = nameof(MediaCacheController.Index) }
             );
         }
 
         private string GetMediaPath(ShellOptions shellOptions, ShellSettings shellSettings, string assetsPath)
         {
             return PathExtensions.Combine(shellOptions.ShellsApplicationDataPath, shellOptions.ShellsContainerName, shellSettings.Name, assetsPath);
+        }
+    }
+
+    [Feature("OrchardCore.Media.Cache")]
+    public class MediaCacheStartup : StartupBase
+    {
+        public override void ConfigureServices(IServiceCollection services)
+        {
+            services.AddScoped<IPermissionProvider, MediaCachePermissions>();
+            services.AddScoped<INavigationProvider, MediaCacheAdminMenu>();
+        }
+    }
+
+    [RequireFeatures("OrchardCore.Deployment")]
+    public class DeploymentStartup : StartupBase
+    {
+        public override void ConfigureServices(IServiceCollection services)
+        {
+            services.AddTransient<IDeploymentSource, MediaDeploymentSource>();
+            services.AddSingleton<IDeploymentStepFactory>(new DeploymentStepFactory<MediaDeploymentStep>());
+            services.AddScoped<IDisplayDriver<DeploymentStep>, MediaDeploymentStepDriver>();
         }
     }
 }

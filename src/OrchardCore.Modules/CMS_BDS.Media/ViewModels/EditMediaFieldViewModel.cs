@@ -1,6 +1,6 @@
-using CMS_BDS.Media.Fields;
 using OrchardCore.ContentManagement;
 using OrchardCore.ContentManagement.Metadata.Models;
+using CMS_BDS.Media.Fields;
 
 namespace CMS_BDS.Media.ViewModels
 {
